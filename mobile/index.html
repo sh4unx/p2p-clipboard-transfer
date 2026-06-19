@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#070d1a" media="(prefers-color-scheme: dark)"><meta name="theme-color" content="#070d1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>P2P</title>
+<script src="firebase-config.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
+:root{
+  --bg:#070d1a; --s1:#0c1526; --s2:#0f1d35; --card:#0e1b30;
+  --border:rgba(56,120,255,0.15); --border2:rgba(56,120,255,0.28);
+  --accent:#3b82f6; --accent2:#60a5fa;
+  --text:#e2eaf8; --muted:#6b83a8; --green:#22d3a5; --orange:#f59e0b; --red:#f87171;
+}
+html,body{height:100%;background:#070d1a;}*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100dvh;max-height:100dvh;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:max(24px,env(safe-area-inset-top)) 16px max(20px,env(safe-area-inset-bottom));}
+header{width:100%;max-width:440px;text-align:center;margin-bottom:18px;flex-shrink:0;}
+.logo-wrap{display:inline-flex;align-items:center;gap:10px;margin-bottom:4px;}
+.logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(59,130,246,0.5);}
+.logo-icon svg{width:18px;height:18px;}
+.logo{font-weight:700;font-size:22px;letter-spacing:-0.3px;color:var(--text);}
+.logo span{color:var(--accent2);}
+.tagline{font-size:12px;color:var(--muted);}
+#authStatus{font-size:11px;color:var(--muted);margin-top:6px;display:flex;align-items:center;justify-content:center;gap:5px;}
+.auth-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);}
+.auth-dot.ok{background:var(--green);}
+#installBanner{width:100%;max-width:440px;background:var(--card);border:1px solid rgba(59,130,246,0.3);border-radius:14px;padding:13px 16px;margin-bottom:14px;display:none;align-items:center;gap:12px;}
+#installBanner.show{display:flex;}
+.install-icon{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.install-icon svg{width:18px;height:18px;}
+.install-txt{flex:1;}
+.install-txt strong{display:block;font-size:13px;font-weight:600;}
+.install-txt span{font-size:11px;color:var(--muted);}
+.install-btn{background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;border:none;border-radius:9px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;padding:8px 14px;cursor:pointer;}
+.install-close{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 2px;}
+#configErr{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.25);border-radius:12px;padding:14px;font-size:13px;color:var(--red);line-height:1.6;display:none;width:100%;max-width:440px;margin-bottom:14px;}
+#configErr.show{display:block;}
+.tab-bar{display:flex;width:100%;max-width:440px;background:var(--s1);border-radius:14px;padding:4px;gap:4px;margin-bottom:16px;border:1px solid var(--border);flex-shrink:0;}
+.tab-btn{flex:1;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:10px;border:none;border-radius:10px;background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.tab-btn svg{width:15px;height:15px;flex-shrink:0;}
+.tab-btn.active{background:rgba(59,130,246,0.15);color:var(--accent2);}
+.tab-panel{display:none;width:100%;max-width:440px;overflow-y:auto;flex:1;}
+#panelClipboard.active{display:flex;flex-direction:column;overflow:hidden;padding-bottom:max(40px,env(safe-area-inset-bottom));}
+.tab-panel.active{display:block;}
+.card{width:100%;background:var(--card);border-radius:16px;padding:18px;margin-bottom:14px;border:1px solid var(--border);}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin-bottom:14px;}
+.hint{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px;}
+.code-input{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:500;letter-spacing:8px;text-align:center;padding:14px 12px;outline:none;text-transform:uppercase;margin-bottom:12px;}
+.code-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,0.15);}
+.code-input::placeholder{color:var(--muted);opacity:.4;letter-spacing:4px;}
+.btn{width:100%;font-family:'Inter',sans-serif;font-weight:600;font-size:14px;border:none;border-radius:12px;padding:14px;cursor:pointer;}
+.btn-primary{background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;box-shadow:0 4px 16px rgba(59,130,246,0.35);}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+.btn-ghost-sm{background:var(--s2);color:var(--muted);border:1px solid var(--border);border-radius:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;padding:12px;cursor:pointer;}
+.status-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:12px;}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.sdot.ok{background:var(--green);box-shadow:0 0 8px var(--green);}
+.sdot.err{background:var(--red);}
+.sdot.spin{background:#f59e0b;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.conn-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.disc-btn{margin-left:auto;font-size:11px;font-weight:500;padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;}
+.action-btns{display:flex;gap:10px;}
+.action-btn{flex:1;border-radius:14px;padding:22px 12px;text-align:center;background:var(--s2);cursor:pointer;border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;overflow:hidden;}
+.action-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:100px;}
+.ab-icon{color:var(--accent);opacity:.8;} .ab-icon svg{width:28px;height:28px;}
+.ab-label{font-size:12px;font-weight:600;color:var(--text);}
+#previewWrap{display:none;margin-top:14px;}
+#previewWrap.show{display:block;}
+#preview{width:100%;border-radius:12px;object-fit:cover;max-height:240px;border:1px solid var(--border);display:block;}
+#progressBar{height:3px;border-radius:2px;margin-top:8px;background:linear-gradient(90deg,#3b82f6,#60a5fa);width:0%;transition:width .3s;display:none;}
+#progressBar.show{display:block;}
+.send-row{display:flex;gap:10px;margin-top:14px;}
+.btn-send{flex:2;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-send:disabled{opacity:.4;}
+.btn-send svg{width:14px;height:14px;}
+.field-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.1px;color:var(--muted);margin-bottom:5px;}
+.text-input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:10px 12px;outline:none;margin-bottom:10px;}
+.text-input:focus{border-color:var(--accent);}
+.text-input::placeholder{color:var(--muted);opacity:.5;font-family:'Inter',sans-serif;}
+.clip-textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:14px;outline:none;resize:none;min-height:110px;line-height:1.6;}
+.clip-textarea:focus{border-color:var(--accent);}
+.clip-textarea::placeholder{color:var(--muted);opacity:.5;}
+.clip-send-btn{width:100%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;border:none;border-radius:12px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;}
+.clip-send-btn:disabled{opacity:.4;}
+.clip-send-btn svg{width:16px;height:16px;}
+.e2ee-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--green);background:rgba(34,211,165,0.08);border:1px solid rgba(34,211,165,0.2);border-radius:6px;padding:4px 9px;margin-bottom:12px;}
+.clips-section{margin-top:16px;}
+.clips-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin-bottom:10px;}
+.clip-item{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;-webkit-user-select:none;user-select:none;}
+.clip-item.pinned{border-color:rgba(59,130,246,0.35);background:rgba(59,130,246,0.04);}
+.clip-item-meta{display:flex;align-items:center;gap:6px;margin-bottom:7px;flex-wrap:wrap;}
+.clip-src{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;flex-shrink:0;pointer-events:none;}
+.clip-src.pc{background:rgba(59,130,246,0.12);color:var(--accent2);border:1px solid rgba(59,130,246,0.2);}
+.clip-src.mobile{background:rgba(34,211,165,0.12);color:var(--green);border:1px solid rgba(34,211,165,0.2);}
+.clip-time{font-size:9px;color:var(--muted);margin-left:auto;pointer-events:none;}
+.clip-text{font-size:13px;color:var(--text);line-height:1.55;word-break:break-word;margin-bottom:10px;pointer-events:none;-webkit-user-select:none;user-select:none;}
+.clip-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.clip-act{font-size:11px;font-weight:500;padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:4px;}
+.clip-act svg{width:11px;height:11px;}
+.clip-act.copied{border-color:var(--green);color:var(--green);}
+.clip-empty{text-align:center;padding:24px 16px;color:var(--muted);font-size:13px;line-height:1.8;}
+.err-inline{font-size:12px;color:var(--red);padding:8px 10px;background:rgba(248,113,113,.06);border-radius:8px;border:1px solid rgba(248,113,113,.2);display:none;margin-bottom:8px;}
+.err-inline.show{display:block;}
+#toast{position:fixed;bottom:max(28px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(70px);background:var(--card);border:1px solid var(--border2);color:var(--text);padding:10px 22px;border-radius:20px;font-size:13px;font-weight:500;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;z-index:99;box-shadow:0 4px 20px rgba(0,0,0,0.5);}
+#toast.show{transform:translateX(-50%) translateY(0);}
+#toast.ok{border-color:rgba(34,211,165,.3);color:var(--green);}
+#toast.err{border-color:rgba(248,113,113,.3);color:var(--red);}
+</style>
+</head>
+<body>
+
+<header style="position:relative;">
+  <div class="logo-wrap">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+    </div>
+    <div class="logo">P<span>2P</span></div>
+  </div>
+  <div class="tagline">Wireless transfer — files &amp; clipboard</div>
+  <div id="authStatus"><div class="auth-dot" id="authDot"></div><span id="authTxt">Authenticating…</span></div>
+  <button id="mRefreshBtn" onclick="window.location.reload()" style="position:absolute;top:0;right:0;width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--s2);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+  </button>
+</header>
+
+<div id="installBanner">
+  <div class="install-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+  </div>
+  <div class="install-txt"><strong>Install P2P</strong><span>Add to home screen</span></div>
+  <button class="install-btn" id="installBtn">Install</button>
+  <button class="install-close" id="installClose">×</button>
+</div>
+<div id="configErr"></div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" id="tabSend" onclick="switchTab('Send')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    Send
+  </button>
+  <button class="tab-btn" id="tabReceived" onclick="switchTab('Received')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
+    Received
+  </button>
+  <button class="tab-btn" id="tabClipboard" onclick="switchTab('Clipboard')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+    Clipboard
+  </button>
+</div>
+
+<!-- ══════════ SEND TAB ══════════ -->
+<div class="tab-panel active" id="panelSend">
+  <div class="card" id="connectCard">
+    <div class="card-title">Connect to PC</div>
+    <p class="hint">Enter the 6-character room code shown in the P2P extension, or scan its QR code.</p>
+    <input class="code-input" id="codeInput" type="text" maxlength="6" placeholder="ABC123" autocomplete="off" spellcheck="false">
+    <button class="btn btn-primary" id="connectBtn">Connect</button>
+    <div class="status-row">
+      <div class="sdot" id="sdot"></div>
+      <span id="statusTxt">Not connected</span>
+    </div>
+    <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px;opacity:0.7;">JPG · PNG · WEBP · GIF · PDF · DOCX</p>
+  </div>
+  <div class="card" id="sendCard" style="display:none;">
+    <div class="card-title">Send File</div>
+    <div class="conn-row">
+      <div class="sdot ok" id="connSdot"></div>
+      <span id="connLabel" style="font-size:12px;color:var(--muted);">Connected</span>
+      <button class="disc-btn" id="discBtn">Disconnect</button>
+    </div>
+    <p style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:12px;opacity:0.7;">JPG · PNG · WEBP · GIF · PDF · DOCX</p>
+    <div class="action-btns">
+      <div class="action-btn">
+        <div class="ab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="ab-label">Files</div>
+        <input type="file" id="galleryInput" accept="*/*">
+      </div>
+      <div class="action-btn">
+        <div class="ab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+        <div class="ab-label">Camera</div>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment">
+      </div>
+    </div>
+    <div id="previewWrap"><img id="preview" alt="Preview"><div id="progressBar"></div></div>
+    <div id="mobileSizeWarn" style="display:none;font-size:12px;color:var(--orange);padding:8px 10px;background:rgba(245,158,11,0.08);border-radius:8px;border:1px solid rgba(245,158,11,0.2);margin-top:10px;"></div>
+    <div class="send-row" id="sendRow" style="display:none;">
+      <button class="btn-ghost-sm" id="clearBtn" style="flex:1;">Clear</button>
+      <button class="btn-send" id="sendBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Send to PC
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ RECEIVED TAB ══════════ -->
+<div class="tab-panel" id="panelReceived">
+  <div id="receivedList" style="width:100%;max-width:440px;">
+    <div class="card">
+      <p style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0;">No files received yet.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ CLIPBOARD TAB ══════════ -->
+<div class="tab-panel" id="panelClipboard">
+  <div class="card" id="clipSetupCard">
+    <div class="card-title">Clipboard Sync</div>
+    <p class="hint">Enter the same Room ID as in your extension to sync text. Texts are end-to-end encrypted.</p>
+    <div class="e2ee-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      End-to-end encrypted
+    </div>
+    <div class="field-label">Room ID</div>
+    <input class="text-input" id="clipRoom" type="text" placeholder="my-secret-room" autocomplete="off">
+    <div class="err-inline" id="clipErr"></div>
+    <button class="btn btn-primary" id="clipConnectBtn">Connect →</button>
+  </div>
+
+  <div class="card" id="clipMainCard" style="display:none;padding:0;overflow:hidden;flex-direction:column;flex:1;">
+    <!-- Connected bar -->
+    <div style="display:flex;align-items:center;gap:8px;padding:14px 18px 12px;border-bottom:1px solid var(--border);">
+      <div style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;"></div>
+      <div id="clipConnLabel" style="font-family:JetBrains Mono,monospace;font-size:12px;font-weight:500;color:var(--accent2);background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);padding:3px 9px;border-radius:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">—</div>
+      <input id="mClipSearch" type="text" placeholder="Search clips…" style="display:none;flex:1;background:var(--s2);border:1px solid var(--accent);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:6px 10px;outline:none;min-width:0;">
+      <button id="mClipSearchBtn" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button id="clipClearBtn" style="font-size:11px;font-weight:500;padding:4px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap;">Clear unpinned</button>
+      <button class="disc-btn" id="clipDiscBtn">Disconnect</button>
+    </div>
+    <!-- Clips list -->
+    <div style="padding:12px 18px;overflow-y:auto;flex:1;min-height:0;">
+      <div id="clipItems">
+        <div class="clip-empty">No clips yet.</div>
+      </div>
+    </div>
+    <!-- Send area pinned to bottom -->
+    <div style="padding:10px 18px 14px;border-top:1px solid var(--border);background:var(--s1);">
+      <div style="display:flex;gap:8px;align-items:flex-end;">
+        <textarea id="clipTextarea" placeholder="Type or paste text to sync…" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:Inter,sans-serif;font-size:14px;padding:10px 12px;outline:none;resize:none;min-height:40px;line-height:1.5;overflow:hidden;" rows="1"></textarea>
+        <button id="clipSendBtn" style="width:40px;height:40px;border-radius:10px;border:none;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// SERVICE WORKER
+// ══════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(function(){});
+}
+
+// ══════════════════════════════════════════
+// CONFIG CHECK
+// ══════════════════════════════════════════
+var CFG = window.__FIREBASE_CONFIG__;
+if (!CFG || !CFG.databaseURL || CFG.apiKey === 'YOUR_API_KEY') {
+  var ce = document.getElementById('configErr');
+  ce.textContent = 'Firebase config not set. Edit mobile/firebase-config.js and redeploy.';
+  ce.classList.add('show');
+}
+
+// ══════════════════════════════════════════
+// PWA INSTALL PROMPT
+// ══════════════════════════════════════════
+var deferredInstall = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault(); deferredInstall = e;
+  document.getElementById('installBanner').classList.add('show');
+});
+document.getElementById('installBtn').addEventListener('click', function() {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  deferredInstall.userChoice.then(function() { deferredInstall = null; document.getElementById('installBanner').classList.remove('show'); });
+});
+document.getElementById('installClose').addEventListener('click', function() {
+  document.getElementById('installBanner').classList.remove('show');
+});
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function toast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + (type || '');
+  setTimeout(function() { t.className = ''; }, 2800);
+}
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('tab' + name).classList.add('active');
+  document.getElementById('panel' + name).classList.add('active');
+  if (name !== 'Clipboard') {
+    var s = document.getElementById('mClipSearch');
+    var badge = document.getElementById('clipConnLabel');
+    var btn = document.getElementById('mClipSearchBtn');
+    if (s && (s.style.display === 'block' || s.style.display === 'flex')) {
+      s.style.display = 'none'; s.value = '';
+      if (badge) badge.style.display = '';
+      if (btn) { btn.style.display = ''; btn.style.borderColor = ''; btn.style.color = ''; }
+    }
+  }
+}
+function timeAgo(ts) {
+  var d = Date.now() - ts;
+  if (d < 60000)    return Math.floor(d/1000) + 's ago';
+  if (d < 3600000)  return Math.floor(d/60000) + 'm ago';
+  if (d < 86400000) return Math.floor(d/3600000) + 'h ago';
+  return new Date(ts).toLocaleDateString();
+}
+function expiryLabel(item) {
+  if (item.pinned) return '';
+  var exp = item.expiresAt || (item.timestamp + 86400000);
+  var rem = exp - Date.now();
+  if (rem <= 0) return '<span style="font-size:9px;color:var(--orange);">expired</span>';
+  var h = Math.floor(rem / 3600000);
+  var m = Math.floor((rem % 3600000) / 60000);
+  if (h < 1)  return '<span style="font-size:9px;color:var(--orange);">expires in ' + m + 'm</span>';
+  if (h < 6)  return '<span style="font-size:9px;color:var(--orange);">expires in ' + h + 'h ' + m + 'm</span>';
+  if (h < 24) return '<span style="font-size:9px;color:var(--orange);">expires in ' + h + 'h</span>';
+  return '';
+}
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;');
+}
+
+// ══════════════════════════════════════════
+// 🔐 ANONYMOUS AUTH
+// ══════════════════════════════════════════
+var _authToken    = null;
+var _refreshToken = null;
+var _tokenExpiry  = 0;
+
+async function getToken() {
+  if (_authToken && Date.now() < _tokenExpiry - 60000) return _authToken;
+  if (_refreshToken) return await _doRefresh();
+  return await _signInAnon();
+}
+
+async function _signInAnon() {
+  var res  = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + CFG.apiKey,
+    { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ returnSecureToken: true }) });
+  var data = await res.json();
+  if (!data.idToken) throw new Error('Auth failed');
+  _saveTokens(data.idToken, data.refreshToken, parseInt(data.expiresIn));
+  return _authToken;
+}
+
+async function _doRefresh() {
+  try {
+    var res  = await fetch('https://securetoken.googleapis.com/v1/token?key=' + CFG.apiKey,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ grant_type: 'refresh_token', refresh_token: _refreshToken }) });
+    var data = await res.json();
+    if (!data.id_token) throw new Error('Refresh failed');
+    _saveTokens(data.id_token, data.refresh_token, parseInt(data.expires_in));
+    return _authToken;
+  } catch(e) { _refreshToken = null; return await _signInAnon(); }
+}
+
+function _saveTokens(id, refresh, expiresIn) {
+  _authToken    = id;
+  _refreshToken = refresh;
+  _tokenExpiry  = Date.now() + expiresIn * 1000;
+  try { localStorage.setItem('p2p_auth', JSON.stringify({ r: refresh })); } catch(e) {}
+}
+
+async function initAuth() {
+  try {
+    var saved = JSON.parse(localStorage.getItem('p2p_auth') || 'null');
+    if (saved && saved.r) { _refreshToken = saved.r; }
+    await getToken();
+    document.getElementById('authDot').classList.add('ok');
+    document.getElementById('authTxt').textContent = 'Authenticated';
+  } catch(e) {
+    document.getElementById('authTxt').textContent = 'Auth failed — check config';
+  }
+}
+
+// ══════════════════════════════════════════
+// 🔒 E2EE — AES-256-GCM via Web Crypto
+// ══════════════════════════════════════════
+var E2EE_SALT = 'p2p-e2ee-v1';
+
+async function deriveKey(roomId) {
+  var enc = new TextEncoder();
+  var raw = await crypto.subtle.importKey('raw', enc.encode(roomId), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: enc.encode(E2EE_SALT), iterations: 100000, hash: 'SHA-256' },
+    raw, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+  );
+}
+
+async function e2eeEncrypt(plaintext, roomId) {
+  var key       = await deriveKey(roomId);
+  var iv        = crypto.getRandomValues(new Uint8Array(12));
+  var encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(plaintext));
+  var combined  = new Uint8Array(12 + encrypted.byteLength);
+  combined.set(iv, 0); combined.set(new Uint8Array(encrypted), 12);
+  var binary = ''; combined.forEach(function(b) { binary += String.fromCharCode(b); });
+  return btoa(binary);
+}
+
+async function e2eeDecrypt(ciphertext, roomId) {
+  var key      = await deriveKey(roomId);
+  var binary   = atob(ciphertext);
+  var combined = new Uint8Array(binary.length);
+  for (var i = 0; i < binary.length; i++) combined[i] = binary.charCodeAt(i);
+  var dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: combined.slice(0,12) }, key, combined.slice(12));
+  return new TextDecoder().decode(dec);
+}
+
+// ══════════════════════════════════════════
+// DB HELPERS
+// ══════════════════════════════════════════
+var dbBase = (CFG && CFG.databaseURL) ? CFG.databaseURL.replace(/\/+$/,'') : '';
+
+async function dbUrl(path) {
+  var token = await getToken();
+  return dbBase + '/' + path + '.json' + (token ? '?auth=' + token : '');
+}
+async function dbWrite(path, data) {
+  try {
+    var r = await fetch(await dbUrl(path), { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+    return r.ok;
+  } catch(e) { return false; }
+}
+async function dbRead(path) {
+  try { var r = await fetch(await dbUrl(path)); return r.ok ? await r.json() : null; }
+  catch(e) { return null; }
+}
+
+// ══════════════════════════════════════════
+// IMAGE TRANSFER
+// ══════════════════════════════════════════
+var roomCode = null;
+var imgPoll  = null;
+var selFile  = null;
+
+var urlCode = new URLSearchParams(location.search).get('code');
+if (urlCode) {
+  var clean = urlCode.toUpperCase();
+  try { localStorage.setItem('p2p_room', clean); } catch(e) {}
+  document.getElementById('codeInput').value = clean;
+  window.addEventListener('load', function() {
+    switchTab('Send');
+    document.getElementById('connectBtn').click();
+  });
+}
+
+document.getElementById('connectBtn').addEventListener('click', async function() {
+  var code = document.getElementById('codeInput').value.trim().toUpperCase();
+  if (!code || code.length < 4) { toast('Enter a valid room code', 'err'); return; }
+  if (!CFG || CFG.apiKey === 'YOUR_API_KEY') { toast('Firebase not configured', 'err'); return; }
+
+  var sdot = document.getElementById('sdot'), stxt = document.getElementById('statusTxt');
+  sdot.className = 'sdot spin'; stxt.textContent = 'Connecting…';
+
+  var meta = await dbRead('rooms/' + code + '/meta');
+  if (!meta) {
+    sdot.className = 'sdot err'; stxt.textContent = 'Room not found';
+    try { localStorage.removeItem('p2p_room'); } catch(e) {}
+    toast('Room expired — enter the new code from your PC', 'err'); return;
+  }
+
+  // Stop any existing poll before starting new one
+  if (imgPoll) { clearInterval(imgPoll); imgPoll = null; }
+  roomCode = code;
+  await dbWrite('rooms/' + code + '/meta/phoneJoined', true);
+  try { localStorage.setItem('p2p_room', code); } catch(e) {}
+  document.getElementById('connectCard').style.display = 'none';
+  document.getElementById('sendCard').style.display    = 'block';
+  document.getElementById('connLabel').textContent = 'Room: ' + code;
+  toast('Connected! Ready to send', 'ok');
+
+  if (imgPoll) clearInterval(imgPoll);
+  imgPoll = setInterval(async function() {
+    if (!roomCode) return;
+    var meta = await dbRead('rooms/' + roomCode + '/meta');
+    if (!meta) {
+      // Room deleted — show yellow dot warning
+      var sdot = document.getElementById('connSdot');
+      if (sdot) sdot.className = 'sdot err';
+      document.getElementById('connLabel').textContent = 'Room no longer exists';
+      return;
+    } else {
+      var sdot = document.getElementById('sdot');
+      var sdot2 = document.getElementById('connSdot');
+      if (sdot2 && sdot2.classList.contains('err')) {
+        sdot2.className = 'sdot ok';
+        document.getElementById('connLabel').textContent = 'Room: ' + roomCode;
+      }
+    }
+    var data = await dbRead('rooms/' + roomCode + '/pc_to_phone');
+    if (!data || !data.imageData) return;
+    await dbWrite('rooms/' + roomCode + '/pc_to_phone', null);
+    var fileData = data.imageData;
+    try { fileData = await e2eeDecrypt(data.imageData, roomCode); } catch(e) {}
+    var isPdf = (data.mimeType === 'application/pdf') || (data.filename || '').toLowerCase().endsWith('.pdf');
+    showReceivedImage(fileData, data.filename || (isPdf ? 'pc_file.pdf' : 'pc_image.jpg'), isPdf);
+    toast(isPdf ? 'PDF from PC!' : 'Image from PC!', 'ok');
+  }, 2500);
+});
+
+document.getElementById('discBtn').addEventListener('click', function() {
+  roomCode = null; clearInterval(imgPoll); imgPoll = null;
+  try { localStorage.removeItem('p2p_room'); } catch(e) {}
+  document.getElementById('sendCard').style.display = 'none';
+  document.getElementById('connectCard').style.display = 'block';
+  document.getElementById('sdot').className = 'sdot';
+  document.getElementById('statusTxt').textContent = 'Not connected';
+  clearPreview();
+});
+
+['galleryInput','cameraInput'].forEach(function(id) {
+  document.getElementById(id).addEventListener('change', function(e) {
+    if (e.target.files[0]) handleFile(e.target.files[0]);
+  });
+});
+
+function handleFile(file) {
+  selFile = file;
+  var warn = document.getElementById('mobileSizeWarn');
+  var MAX = 6.5 * 1024 * 1024; // 6.7MB raw = ~9MB base64
+  if (!file.type.startsWith('image/') && file.size > MAX) {
+    if (warn) { warn.style.display = 'block'; warn.textContent = '⚠ File too large — max 6.5MB'; }
+    return;
+  }
+  if (warn) warn.style.display = 'none';
+
+  var r = new FileReader();
+  r.onload = function(e) {
+    var wrap = document.getElementById('previewWrap');
+    wrap.classList.add('show');
+    if (file.type === 'application/pdf') {
+      wrap.innerHTML =
+        '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--s2);border:1px solid rgba(248,113,113,0.3);border-radius:12px;">' +
+        '<span style="font-size:32px;">📄</span>' +
+        '<div><div style="font-size:13px;font-weight:600;color:var(--text);">' + file.name + '</div>' +
+        '<div style="font-size:12px;color:var(--muted);margin-top:3px;">' + (file.size/1024).toFixed(1) + ' KB</div></div>' +
+        '</div><div id="progressBar"></div>';
+    } else if (file.type.startsWith('image/')) {
+      wrap.innerHTML = '<img id="preview" src="' + e.target.result + '" alt="Preview" style="width:100%;border-radius:12px;object-fit:cover;max-height:240px;border:1px solid var(--border);display:block;"><div id="progressBar"></div>';
+    } else {
+      var ext = file.name.split('.').pop().toUpperCase();
+      wrap.innerHTML =
+        '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--s2);border:1px solid var(--border2);border-radius:12px;">' +
+        '<div style="width:44px;height:44px;border-radius:10px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:var(--accent2);">' + ext + '</div>' +
+        '<div><div style="font-size:13px;font-weight:600;color:var(--text);">' + file.name + '</div>' +
+        '<div style="font-size:12px;color:var(--muted);margin-top:3px;">' + (file.size/1024).toFixed(1) + ' KB</div></div>' +
+        '</div><div id="progressBar"></div>';
+    }
+    document.getElementById('sendRow').style.display = 'flex';
+  };
+  r.readAsDataURL(file);
+}
+
+function clearPreview() {
+  selFile = null;
+  var wrap = document.getElementById('previewWrap');
+  wrap.classList.remove('show');
+  wrap.innerHTML = '<img id="preview" alt="Preview"><div id="progressBar"></div>';
+  document.getElementById('sendRow').style.display = 'none';
+  document.getElementById('galleryInput').value = '';
+  document.getElementById('cameraInput').value = '';
+  var warn = document.getElementById('mobileSizeWarn');
+  if (warn) warn.style.display = 'none';
+}
+document.getElementById('clearBtn').addEventListener('click', clearPreview);
+
+document.getElementById('sendBtn').addEventListener('click', async function() {
+  if (!selFile || !roomCode) return;
+  // Check room still exists
+  var meta = await dbRead('rooms/' + roomCode + '/meta');
+  if (!meta) {
+    toast('Room does not exist — reconnect', 'err');
+    var sdot = document.getElementById('sdot');
+    var sdot = document.getElementById('connSdot');
+    if (sdot) sdot.className = 'sdot err';
+    document.getElementById('connLabel').textContent = 'Room no longer exists';
+    return;
+  }
+  var btn = this, bar = document.getElementById('progressBar');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  bar.classList.add('show'); bar.style.width = '20%';
+
+  var r = new FileReader();
+  r.onload = async function(e) {
+    var data = e.target.result;
+    bar.style.width = '40%';
+    var isPdf = selFile && selFile.type === 'application/pdf';
+    if (!isPdf && data.length > 1500000) {
+      var img = new Image();
+      img.onload = async function() {
+        var c = document.createElement('canvas');
+        var MAX=1400, w=img.width, h=img.height;
+        if (w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
+        c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
+        await doSend(c.toDataURL('image/jpeg',0.82));
+      };
+      img.src = data;
+    } else { await doSend(data); }
+  };
+  r.readAsDataURL(selFile);
+
+  async function doSend(imageData) {
+    bar.style.width = '65%';
+    // Encrypt using room code as key
+    var encData = imageData;
+    try { encData = await e2eeEncrypt(imageData, roomCode); } catch(e) {}
+    bar.style.width = '85%';
+    var ok = await dbWrite('rooms/' + roomCode + '/incoming', {
+      imageData: encData, filename: selFile.name, mimeType: selFile.type, sentAt: Date.now()
+    });
+    bar.style.width = '100%';
+    setTimeout(function(){ bar.classList.remove('show'); bar.style.width='0%'; }, 500);
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send to PC';
+    if (ok) { toast('Sent! Check your PC', 'ok'); clearPreview(); }
+    else    { toast('Send failed — try again', 'err'); }
+  }
+});
+
+// ══════════════════════════════════════════
+// CLIPBOARD SYNC
+// ══════════════════════════════════════════
+var clipRoomId = null;
+var clipItems  = [];
+var doubleTapLastId = null;
+var doubleTapLastTime = 0;
+var clipPoll   = null;
+var clipKnown  = new Set();
+
+try {
+  var saved = JSON.parse(localStorage.getItem('p2p_clip') || 'null');
+  if (saved) document.getElementById('clipRoom').value = saved.room || '';
+} catch(e) {}
+
+document.getElementById('clipConnectBtn').addEventListener('click', function() {
+  var room = document.getElementById('clipRoom').value.trim();
+  var err  = document.getElementById('clipErr');
+  err.classList.remove('show');
+  if (!room) { err.textContent = 'Enter a Room ID.'; err.classList.add('show'); return; }
+  clipRoomId = room;
+  try { localStorage.setItem('p2p_clip', JSON.stringify({ room })); } catch(e) {}
+  document.getElementById('clipSetupCard').style.display = 'none';
+  document.getElementById('clipMainCard').style.display  = 'flex';
+  document.getElementById('clipConnLabel').textContent = room;
+  toast('Clipboard connected!', 'ok');
+  fetchClips();
+  clipPoll = setInterval(fetchClips, 3000);
+  // Check and delete empty room older than 24h
+  (async function() {
+    try {
+      var token = await getToken();
+      var metaUrl = dbBase + '/link/' + room + '/meta.json' + (token ? '?auth=' + token : '');
+      var metaRes = await fetch(metaUrl);
+      var meta = await metaRes.json();
+      if (!meta || !meta.createdAt) {
+        await fetch(metaUrl, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ createdAt: Date.now() }) });
+      } else if (Date.now() - meta.createdAt > 86400000) {
+        var itemsUrl = dbBase + '/link/' + room + '/items.json' + (token ? '?auth=' + token : '');
+        var itemsRes = await fetch(itemsUrl);
+        var items = await itemsRes.json();
+        if (!items || Object.keys(items).length === 0) {
+          var roomUrl = dbBase + '/link/' + room + '.json' + (token ? '?auth=' + token : '');
+          await fetch(roomUrl, { method: 'DELETE' });
+        }
+      }
+    } catch(e) {}
+  })();
+});
+
+document.getElementById('clipDiscBtn').addEventListener('click', function() {
+  clipRoomId = null; clipItems = []; clipKnown = new Set();
+  clearInterval(clipPoll); clipPoll = null;
+  try { localStorage.removeItem('p2p_clip'); } catch(e) {}
+  document.getElementById('clipMainCard').style.display  = 'none';
+  document.getElementById('clipSetupCard').style.display = 'block';
+  renderClips();
+});
+
+document.getElementById('clipSendBtn').addEventListener('click', async function() {
+  var text = document.getElementById('clipTextarea').value.trim();
+  if (!text) { toast('Enter some text first', 'err'); return; }
+  var btn = this; btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    // Encrypt text before sending
+    var encText = await e2eeEncrypt(text, clipRoomId);
+    var token   = await getToken();
+    var url     = dbBase + '/link/' + clipRoomId + '/items.json' + (token ? '?auth=' + token : '');
+    var res = await fetch(url, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: encText, source: 'mobile', timestamp: Date.now(), expiresAt: Date.now() + 86400000 })
+    });
+    if (res.ok) { toast('Sent!', 'ok'); document.getElementById('clipTextarea').value = ''; }
+    else        { toast('Send failed', 'err'); }
+  } catch(e) { toast('Send failed', 'err'); }
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
+});
+
+async function fetchClips() {
+  if (!clipRoomId) return;
+  try {
+    var token = await getToken();
+    var url   = dbBase + '/link/' + clipRoomId + '/items.json' + (token ? '?auth=' + token : '');
+    var res   = await fetch(url);
+    if (!res.ok) return;
+    var raw   = await res.json();
+    if (!raw)  { clipItems = []; renderClips(); return; }
+
+    var items = await Promise.all(Object.entries(raw).map(async function(e) {
+      var item = Object.assign({ id: e[0] }, e[1]);
+      if (item.text) {
+        try { item._plain = await e2eeDecrypt(item.text, clipRoomId); }
+        catch(_) { item._plain = item.text; } // fallback
+      }
+      return item;
+    }));
+
+    items.forEach(function(item) {
+      if (!clipKnown.has(item.id) && item.source === 'pc') toast('New clip from PC!', 'ok');
+      clipKnown.add(item.id);
+    });
+    clipItems = items.sort(function(a,b){
+      return (b.pinned?1:0)-(a.pinned?1:0) || b.timestamp-a.timestamp;
+    });
+    renderClips();
+  } catch(e) {}
+}
+
+async function clipDelete(id) {
+  clipItems = clipItems.filter(function(i){ return i.id !== id; });
+  renderClips();
+  try {
+    var token = await getToken();
+    var url   = dbBase + '/link/' + clipRoomId + '/items/' + id + '.json' + (token ? '?auth=' + token : '');
+    await fetch(url, { method:'DELETE' });
+  } catch(e) {}
+}
+
+async function clipPin(id, currentlyPinned) {
+  var nowPinned = !currentlyPinned;
+  clipItems = clipItems.map(function(i) {
+    return i.id === id ? Object.assign({}, i, { pinned: nowPinned, expiresAt: nowPinned ? null : Date.now() + 86400000 }) : i;
+  });
+  clipItems.sort(function(a,b){ return (b.pinned?1:0)-(a.pinned?1:0) || b.timestamp-a.timestamp; });
+  renderClips();
+  try {
+    var token  = await getToken();
+    var url    = dbBase + '/link/' + clipRoomId + '/items/' + id + '.json' + (token ? '?auth=' + token : '');
+    var fields = nowPinned ? { pinned: true, expiresAt: null } : { pinned: false, expiresAt: Date.now() + 86400000 };
+    await fetch(url, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(fields) });
+  } catch(e) {}
+}
+
+function showReceivedImage(fileData, filename, isPdf) {
+  var existing = document.getElementById('receivedImgCard');
+  if (existing) existing.remove();
+  var card = document.createElement('div');
+  card.className = 'card'; card.id = 'receivedImgCard';
+
+  var isImage = !isPdf && (fileData.startsWith('data:image/') || ['jpg','jpeg','png','gif','webp','bmp','svg'].some(function(e){ return filename.toLowerCase().endsWith('.'+e); }));
+  var ext = filename.split('.').pop().toUpperCase();
+
+  var previewHtml = isPdf
+    ? '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--s2);border:1px solid rgba(248,113,113,0.3);border-radius:12px;margin-bottom:12px;"><span style="font-size:32px;">📄</span><div><div style="font-size:13px;font-weight:600;color:var(--text);">' + filename + '</div></div></div>'
+    : isImage
+    ? '<img src="' + fileData + '" style="width:100%;border-radius:12px;border:1px solid var(--border);display:block;max-height:300px;object-fit:contain;background:var(--s2);margin-bottom:12px;">'
+    : '<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--s2);border:1px solid var(--border2);border-radius:12px;margin-bottom:12px;"><div style="width:44px;height:44px;border-radius:10px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:var(--accent2);">' + ext + '</div><div><div style="font-size:13px;font-weight:600;color:var(--text);">' + filename + '</div></div></div>';
+
+  var title = isPdf ? '📄 PDF from PC' : isImage ? 'Image from PC' : 'File from PC';
+  var saveLabel = isPdf ? 'Save PDF' : isImage ? 'Save Image' : 'Save File';
+
+  card.innerHTML =
+    '<div class="card-title">' + title + '</div>' +
+    previewHtml +
+    '<div style="display:flex;gap:10px;">' +
+      '<button id="rcvDismiss" class="btn-ghost-sm" style="flex:1;">Dismiss</button>' +
+      '<button id="rcvSave" class="btn btn-primary" style="flex:2;">' + saveLabel + '</button>' +
+    '</div>';
+
+  var list = document.getElementById('receivedList');
+  var empty = list.querySelector('.card p');
+  if (empty && empty.textContent.includes('No files')) list.querySelector('.card').remove();
+  list.insertBefore(card, list.firstChild);
+  document.getElementById('rcvDismiss').addEventListener('click', function() {
+    card.remove();
+    if (!list.firstChild) {
+      list.innerHTML = '<div class="card"><p style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0;">No files received yet.</p></div>';
+    }
+  });
+  document.getElementById('rcvSave').addEventListener('click', async function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      var parts = fileData.split(',');
+      var mime = parts[0].match(/:(.*?);/)[1];
+      var binary = atob(parts[1]);
+      var arr = new Uint8Array(binary.length);
+      for (var i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+      var blob = new Blob([arr], { type: mime });
+
+      // Option 1: File System Access API (Android Chrome 86+) — real save dialog
+      if (window.showSaveFilePicker) {
+        try {
+          var ext = filename.split('.').pop();
+          var handle = await window.showSaveFilePicker({
+            suggestedName: filename,
+            types: [{ description: 'File', accept: { [mime]: ['.' + ext] } }]
+          });
+          var writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          toast('Saved!', 'ok');
+          btn.disabled = false; btn.textContent = saveLabel;
+          return;
+        } catch(e) {
+          if (e.name === 'AbortError') { btn.disabled = false; btn.textContent = saveLabel; return; }
+          // fall through to next method
+        }
+      }
+
+      // Option 2: Web Share API (Android share sheet → Downloads)
+      if (navigator.share) {
+        try {
+          var file = new File([blob], filename, { type: mime });
+          await navigator.share({ files: [file] });
+          btn.disabled = false; btn.textContent = saveLabel;
+          return;
+        } catch(e) {
+          if (e.name === 'AbortError') { btn.disabled = false; btn.textContent = saveLabel; return; }
+        }
+      }
+
+      // Option 3: Blob URL fallback
+      var blobUrl = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = blobUrl; a.download = filename;
+      document.body.appendChild(a); a.click();
+      setTimeout(function() { URL.revokeObjectURL(blobUrl); a.remove(); }, 2000);
+      toast('Downloading…', 'ok');
+    } catch(e) {
+      toast('Save failed', 'err');
+    }
+    btn.disabled = false; btn.textContent = saveLabel;
+  });
+  switchTab('Received');
+}
+
+function renderClips() {
+  if (document.querySelector('.clip-item textarea')) return;  // editing in progress — don't rebuild
+  var el = document.getElementById('clipItems');
+  if (!clipItems.length) { el.innerHTML = '<div class="clip-empty">No clips yet.</div>'; return; }
+  el.innerHTML = clipItems.slice(0,30).map(function(item) {
+    var sc     = item.source === 'mobile' ? 'mobile' : 'pc';
+    var sl     = item.source === 'mobile' ? 'phone' : 'pc';
+    var pinned = !!item.pinned;
+    var pinIcon = pinned ? '<svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor" stroke="none"><path d="M17 3H7a2 2 0 00-2 2v16l7-3 7 3V5a2 2 0 00-2-2z"/></svg>' : '<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3H7a2 2 0 00-2 2v16l7-3 7 3V5a2 2 0 00-2-2z"/></svg>';
+    return '<div class="clip-item' + (pinned?' pinned':'') + '" id="ci-'+item.id+'">' +
+      '<div class="clip-item-meta">' +
+        '<span class="clip-src '+sc+'">'+sl+'</span>' +
+        (pinned ? '<span style="margin-left:4px;"><svg viewBox=\"0 0 24 24\" width=\"11\" height=\"11\" fill=\"#3b82f6\" stroke=\"none\"><path d=\"M17 3H7a2 2 0 00-2 2v16l7-3 7 3V5a2 2 0 00-2-2z\"/></svg></span>' : '') +
+        expiryLabel(item) +
+        '<span class="clip-time">'+timeAgo(item.timestamp)+'</span>' +
+        '<button class="clip-act pin-act" data-id="'+item.id+'" data-pinned="'+(pinned?'1':'0')+'" style="margin-left:6px;padding:3px 6px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;color:var(--muted);">' + pinIcon + '</button>' +
+      '</div>' +
+      '<div class="clip-text">'+escHtml(item._plain || item.text)+'</div>' +
+      '<div class="clip-actions">' +
+        '<button class="clip-act edit-act" data-id="'+item.id+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit</button>' +
+        '<button class="clip-act copy-act" data-text="'+escHtml(item._plain || '')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button>' +
+        '<button class="clip-act del" data-id="'+item.id+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg> Delete</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  el.querySelectorAll('.edit-act').forEach(function(btn) {
+    var id = btn.getAttribute('data-id');
+    btn.addEventListener('click', function() {
+      var item = clipItems.find(function(i){ return i.id === id; });
+      if (!item) return;
+      var card = document.getElementById('ci-' + id);
+      var textEl = card.querySelector('.clip-text');
+      var actions = card.querySelector('.clip-actions');
+      var ta = document.createElement('textarea');
+      ta.value = item._plain || item.text || '';
+      ta.style.cssText = 'width:100%;background:var(--s2);border:1px solid var(--accent);border-radius:8px;color:var(--text);font-family:Inter,sans-serif;font-size:13px;padding:8px 12px;outline:none;resize:none;min-height:60px;line-height:1.5;margin-bottom:8px;box-sizing:border-box;display:block;';
+      textEl.style.display = 'none';
+      textEl.parentNode.insertBefore(ta, textEl);
+      ta.focus();
+      var origActions = actions.innerHTML;
+      actions.innerHTML = '<button class="clip-act" style="color:var(--green);border-color:var(--green);" id="sav-'+id+'">✓ Save</button><button class="clip-act" id="can-'+id+'">✕ Cancel</button>';
+      document.getElementById('sav-'+id).addEventListener('click', async function() {
+        var newText = ta.value.trim();
+        if (!newText) return;
+        item._plain = newText;
+        item.text = newText;
+        ta.remove(); textEl.innerHTML = escHtml(newText); textEl.style.display = '';
+        actions.innerHTML = origActions;
+        bindClipActions(el);
+        try {
+          var enc = await e2eeEncrypt(newText, clipRoomId);
+          var token = await getToken();
+          var url = dbBase + '/link/' + clipRoomId + '/items/' + id + '.json' + (token ? '?auth=' + token : '');
+          await fetch(url, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: enc }) });
+        } catch(e) {}
+        toast('Updated', 'ok');
+      });
+      document.getElementById('can-'+id).addEventListener('click', function() {
+        ta.remove(); textEl.style.display = ''; actions.innerHTML = origActions; bindClipActions(el);
+      });
+    });
+  });
+  el.querySelectorAll('.copy-act').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var text = btn.getAttribute('data-text').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&#39;/g,"'");
+      navigator.clipboard.writeText(text).then(function() {
+        btn.classList.add('copied'); btn.textContent = '✓ Copied!';
+        setTimeout(function(){ btn.classList.remove('copied'); btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy'; }, 1500);
+      }).catch(function(){ toast('Copy failed','err'); });
+    });
+  });
+  el.querySelectorAll('.pin-act').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      clipPin(btn.getAttribute('data-id'), btn.getAttribute('data-pinned') === '1');
+    });
+  });
+  el.querySelectorAll('.clip-act.del').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (confirm('Delete this clip?')) clipDelete(btn.getAttribute('data-id'));
+    });
+  });
+}
+
+function bindClipActions(el) {
+  renderClips();
+}
+
+document.getElementById('clipClearBtn').addEventListener('click', async function() {
+  var unpinned = clipItems.filter(function(i){ return !i.pinned; });
+  if (!unpinned.length) { toast('No unpinned clips', ''); return; }
+  if (!confirm('Delete ' + unpinned.length + ' unpinned clip(s)?')) return;
+  clipItems = clipItems.filter(function(i){ return i.pinned; });
+  renderClips();
+  for (var i = 0; i < unpinned.length; i++) await clipDelete(unpinned[i].id);
+  toast('Cleared', 'ok');
+});
+
+document.getElementById('mClipSearchBtn').addEventListener('click', function() {
+  var search = document.getElementById('mClipSearch');
+  var badge  = document.getElementById('clipConnLabel');
+  var isOpen = search.style.display === 'flex' || search.style.display === 'block';
+  if (!isOpen) {
+    search.style.display = 'block';
+    badge.style.display = 'none';
+    this.style.display = 'none';
+    search.focus();
+  } else {
+    search.style.display = 'none';
+    search.value = '';
+    badge.style.display = '';
+    this.style.display = '';
+    this.style.borderColor = '';
+    this.style.color = '';
+    renderClips();
+  }
+});
+
+document.getElementById('mClipSearch').addEventListener('input', function() {
+  var q = this.value.toLowerCase();
+  var filtered = clipItems.filter(function(i){ return (i._plain || i.text || '').toLowerCase().includes(q); });
+  var orig = clipItems;
+  clipItems = filtered;
+  renderClips();
+  clipItems = orig;
+});
+
+document.getElementById('mClipSearch').addEventListener('blur', function() {
+  if (!this.value) {
+    this.style.display = 'none';
+    document.getElementById('clipConnLabel').style.display = '';
+    var btn = document.getElementById('mClipSearchBtn');
+    if (btn) { btn.style.display = ''; btn.style.borderColor = ''; btn.style.color = ''; }
+  }
+});
+
+document.getElementById('clipTextarea').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = this.scrollHeight + 'px';
+});
+
+// Auto-restore room connection
+try {
+  var savedRoom = localStorage.getItem('p2p_room');
+  if (savedRoom) {
+    document.getElementById('codeInput').value = savedRoom;
+    window.addEventListener('load', function() { document.getElementById('connectBtn').click(); });
+  }
+} catch(e) {}
+
+// Auto-restore clipboard
+try {
+  var s2 = JSON.parse(localStorage.getItem('p2p_clip') || 'null');
+  if (s2 && s2.room) {
+    window.addEventListener('load', function() { document.getElementById('clipConnectBtn').click(); });
+  }
+} catch(e) {}
+
+// Auto-restore image room (skip if QR code is in URL — QR handler takes over)
+try {
+  var savedRoom = localStorage.getItem('p2p_room');
+  if (savedRoom && !urlCode) {
+    window.addEventListener('load', async function() {
+      await new Promise(function(r) { setTimeout(r, 1200); }); // wait for auth
+      // Double-check no QR code appeared (edge case)
+      if (new URLSearchParams(location.search).get('code')) return;
+      document.getElementById('codeInput').value = savedRoom;
+      document.getElementById('connectBtn').click();
+    });
+  }
+} catch(e) {}
+
+// ══════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════
+// Single persistent double-tap listener — survives re-renders
+var clipListContainer = document.getElementById('clipItems').parentElement;
+clipListContainer.addEventListener('touchstart', function(e) {
+  var item = e.target.closest('.clip-item');
+  if (!item) return;
+  // Only exclude actual interactive buttons
+  if (e.target.closest('button') || e.target.closest('a')) return;
+  var id = item.id.replace('ci-', '');
+  var now = Date.now();
+  if (doubleTapLastId === id && (now - doubleTapLastTime) < 400) {
+    e.preventDefault();
+    doubleTapLastTime = 0;
+    doubleTapLastId = null;
+    var current = clipItems.find(function(i) { return i.id === id; });
+    if (current) {
+      toast(current.pinned ? 'Unpinned' : 'Pinned', 'ok');
+      clipPin(current.id, !!current.pinned);
+    }
+  } else {
+    doubleTapLastId = id;
+    doubleTapLastTime = now;
+  }
+}, { passive: false });
+
+initAuth();
+</script>
+</body>
+</html>
