@@ -1,0 +1,27 @@
+{
+  "rules": {
+    "rooms": {
+      "$roomCode": {
+        ".read":  "auth != null",
+        ".write": "auth != null",
+        "incoming": {
+          ".validate": "newData.child('imageData').isString() && newData.child('imageData').val().length < 9000000"
+        },
+        "pc_to_phone": {
+          ".validate": "newData.child('imageData').isString() && newData.child('imageData').val().length < 9000000"
+        }
+      }
+    },
+    "link": {
+      "$roomId": {
+        ".read":  "auth != null",
+        ".write": "auth != null",
+        "items": {
+          "$itemId": {
+            ".validate": "newData.child('text').isString() && newData.child('text').val().length < 100000"
+          }
+        }
+      }
+    }
+  }
+}

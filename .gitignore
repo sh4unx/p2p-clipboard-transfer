@@ -1,0 +1,8 @@
+.firebase/
+node_modules/
+*.log
+.DS_Store
+
+# real secrets — keep only the .example templates in the repo
+mobile/firebase-config.js
+.firebaserc
